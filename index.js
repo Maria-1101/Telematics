@@ -1,29 +1,57 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const twilio = require('twilio');
-
+const cors = require('cors');
 const app = express();
+const port = 3000;
+ 
+app.use(cors());
 app.use(bodyParser.json());
-
-const accountSid = process.env.TWILIO_ACCOUNT_SID;  // Set in Render environment variables
-const authToken = process.env.TWILIO_AUTH_TOKEN;    // Set in Render environment variables
-const serviceSid = process.env.TWILIO_SERVICE_SID;  // (Optional) For Twilio Verify Service
-
-const client = twilio(accountSid, authToken);
-
+ 
+// Temporary store for OTPs (use a database in production)
+const otpStore = {};
+ 
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+};
+ 
+// ✅ Send OTP
 app.post('/send-otp', (req, res) => {
-    const { phoneNumber } = req.body;
-    if (!phoneNumber) return res.status(400).send({ error: 'Phone number is required' });
-
-    // Using Twilio Verify service to send OTP
-    client.verify.services(serviceSid)
-        .verifications
-        .create({ to: phoneNumber, channel: 'sms' })
-        .then(verification => res.send({ success: true, sid: verification.sid }))
-        .catch(err => res.status(500).send({ error: err.message }));
+  const { phone } = req.body;
+ 
+  if (!phone) {
+    return res.status(400).json({ error: 'Phone number is required' });
+  }
+ 
+  const otp = generateOTP();
+  otpStore[phone] = otp;
+ 
+  // In production, integrate with an SMS provider (e.g., Twilio)
+  console.log(`OTP for ${phone}: ${otp}`);
+ 
+  return res.json({ success: true, message: 'OTP sent successfully' });
 });
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
+ 
+// ✅ Verify OTP
+app.post('/verify-otp', (req, res) => {
+  const { phone, otp } = req.body;
+ 
+  if (!phone || !otp) {
+    return res.status(400).json({ error: 'Phone number and OTP are required' });
+  }
+ 
+  if (otpStore[phone] === otp) {
+    delete otpStore[phone]; // OTP used, remove it
+    return res.json({ success: true, message: 'OTP verified successfully' });
+  } else {
+    return res.status(401).json({ success: false, message: 'Invalid OTP' });
+  }
+});
+ 
+// Test endpoint (optional)
+app.get('/', (req, res) => {
+  res.send('OTP Service is running');
+});
+ 
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });
