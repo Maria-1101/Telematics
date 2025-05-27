@@ -49,7 +49,7 @@ class RegistrationPage : AppCompatActivity() {
     }
 
     private fun sendOtpToBackend(phoneNumber: String) {
-        val url = "https://your-backend-domain.com/send-otp" // Replace with your actual backend URL
+        val url = "https://telematics-zdbu.onrender.com/send-otp" // Replace with your actual backend URL
 
         val jsonBody = JSONObject().apply {
             put("phoneNumber", phoneNumber)

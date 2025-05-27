@@ -10,32 +10,32 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.activity.enableEdgeToEdge
-import com.google.firebase.FirebaseApp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.PhoneAuthCredential
-import com.google.firebase.auth.PhoneAuthProvider
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
+import org.json.JSONObject
 
 class OTPVerificationPage : AppCompatActivity() {
+
     private lateinit var verifyButton: Button
     private lateinit var verifyButtonClickable: Button
-    private lateinit var newOTPTime: TextView
-    private lateinit var mobileNumToVerify: TextView
     private lateinit var otpBoxes: List<EditText>
-    private lateinit var firebaseAuth: FirebaseAuth
-    private lateinit var verificationId: String
-
+    private lateinit var mobileNumToVerify: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_otpverification_page)
 
-        FirebaseApp.initializeApp(this)
-
         verifyButton = findViewById(R.id.verify_button)
-        firebaseAuth =  FirebaseAuth.getInstance()
-        verificationId = intent.getStringExtra("verificationId")?:return
+        verifyButtonClickable = findViewById(R.id.verify_button_clickable)
+        mobileNumToVerify = findViewById(R.id.mobile_num_to_verify)
+
+        // Get full phone number from intent
+        val fullPhoneNumber = intent.getStringExtra("fullPhoneNumber") ?: return
+
+        mobileNumToVerify.text = fullPhoneNumber
+
         otpBoxes = listOf(
             findViewById(R.id.otp_1),
             findViewById(R.id.otp_2),
@@ -45,23 +45,37 @@ class OTPVerificationPage : AppCompatActivity() {
             findViewById(R.id.otp_6)
         )
 
+        setupOtpWatcher()
+
         verifyButton.setOnClickListener {
             val otp = otpBoxes.joinToString("") { it.text.toString().trim() }
             if (otp.length == 6) {
-                val credential = PhoneAuthProvider.getCredential(verificationId, otp)
-                signInWithPhoneAuthCredential(credential)
+                verifyOtpWithBackend(fullPhoneNumber, otp)
+            } else {
+                Toast.makeText(this, "Enter valid 6-digit OTP", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        verifyButtonClickable.setOnClickListener {
+            val otp = otpBoxes.joinToString("") { it.text.toString().trim() }
+            if (otp.length == 6) {
+                verifyOtpWithBackend(fullPhoneNumber, otp)
             } else {
                 Toast.makeText(this, "Enter valid 6-digit OTP", Toast.LENGTH_SHORT).show()
             }
         }
     }
+
     private fun setupOtpWatcher() {
-        otpBoxes.forEach {
-            it.addTextChangedListener(object : TextWatcher {
+        otpBoxes.forEachIndexed { index, editText ->
+            editText.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
-                    val otp = otpBoxes.joinToString("") { box -> box.text.toString().trim() }
+                    if (editText.text.toString().length == 1 && index < otpBoxes.size - 1) {
+                        otpBoxes[index + 1].requestFocus()
+                    }
+                    val otp = otpBoxes.joinToString("") { it.text.toString().trim() }
                     verifyButtonClickable.visibility = if (otp.length == 6) View.VISIBLE else View.GONE
-                    verifyButton.visibility = if(otp.length == 6) View.GONE else View.VISIBLE
+                    verifyButton.visibility = if (otp.length == 6) View.GONE else View.VISIBLE
                 }
 
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -70,15 +84,31 @@ class OTPVerificationPage : AppCompatActivity() {
         }
     }
 
-    private fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
-        firebaseAuth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    Toast.makeText(this, "OTP Verified!", Toast.LENGTH_SHORT).show()
-                    // TODO: Redirect to the next screen
-                } else {
-                    Toast.makeText(this, "Verification failed!", Toast.LENGTH_SHORT).show()
-                }
+    private fun verifyOtpWithBackend(phoneNumber: String, otp: String) {
+        val url = "https://telematics-zdbu.onrender.com/verify-otp" // Replace with your backend endpoint
+
+        val jsonBody = JSONObject().apply {
+            put("phoneNumber", phoneNumber)
+            put("code", otp)
+        }
+
+        val request = object : StringRequest(
+            Request.Method.POST, url,
+            Response.Listener { response ->
+                Toast.makeText(this, "OTP Verified!", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, UserDetails::class.java) // Replace with actual next activity
+                startActivity(intent)
+                finish()
+            },
+            Response.ErrorListener { error ->
+                val errorMsg = error.networkResponse?.data?.let { String(it) } ?: error.message
+                Toast.makeText(this, "Verification failed: $errorMsg", Toast.LENGTH_LONG).show()
             }
+        ) {
+            override fun getBody(): ByteArray = jsonBody.toString().toByteArray(Charsets.UTF_8)
+            override fun getBodyContentType(): String = "application/json"
+        }
+
+        Volley.newRequestQueue(this).add(request)
     }
 }

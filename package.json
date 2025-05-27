@@ -12,7 +12,16 @@
   "type": "commonjs",
   "dependencies": {
     "body-parse": "^0.1.0",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "twilio": "^5.6.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Maria-1101/Telematics.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Maria-1101/Telematics/issues"
+  },
+  "homepage": "https://github.com/Maria-1101/Telematics#readme"
 }
