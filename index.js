@@ -2,25 +2,26 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const twilio = require('twilio');
+const { Resend } = require('resend');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// ⚠️ Replace these with actual values or use environment variables (recommended)
+// Twilio setup
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const serviceSid = process.env.TWILIO_SERVICE_SID;
-
 const client = twilio(accountSid, authToken);
 
-// ✅ Send OTP
+// Resend setup
+const resend = new Resend(process.env.RESEND_API_KEY);
+const otpStore = {}; // In-memory storage for email OTPs
+
+// ✅ SMS OTP - Send
 app.post('/send-otp', (req, res) => {
     const { phoneNumber } = req.body;
-
-    if (!phoneNumber) {
-        return res.status(400).json({ error: 'Phone number is required' });
-    }
+    if (!phoneNumber) return res.status(400).json({ error: 'Phone number is required' });
 
     client.verify.services(serviceSid)
         .verifications
@@ -35,13 +36,10 @@ app.post('/send-otp', (req, res) => {
         });
 });
 
-// ✅ Verify OTP
+// ✅ SMS OTP - Verify
 app.post('/verify-otp', (req, res) => {
     const { phoneNumber, otp } = req.body;
-
-    if (!phoneNumber || !otp) {
-        return res.status(400).json({ error: 'Phone number and OTP are required' });
-    }
+    if (!phoneNumber || !otp) return res.status(400).json({ error: 'Phone number and OTP are required' });
 
     client.verify.services(serviceSid)
         .verificationChecks
@@ -59,11 +57,49 @@ app.post('/verify-otp', (req, res) => {
         });
 });
 
-// Test endpoint
-app.get('/', (req, res) => {
-    res.send('OTP service is running!');
+// ✅ Email OTP - Send
+app.post('/send-email-otp', async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    otpStore[email] = otp;
+
+    try {
+        await resend.emails.send({
+            from: 'Your Name <your-verified-email@example.com>', // Must be verified in Resend
+            to: email,
+            subject: 'Your OTP Verification Code',
+            text: `Your OTP is: ${otp}`,
+        });
+
+        console.log(`Email OTP sent to ${email}: ${otp}`);
+        res.status(200).json({ success: true, message: 'OTP sent to email' });
+    } catch (error) {
+        console.error('Email OTP send error:', error);
+        res.status(500).json({ success: false, message: 'Failed to send OTP', error: error.message });
+    }
 });
 
+// ✅ Email OTP - Verify
+app.post('/verify-email-otp', (req, res) => {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ error: 'Email and OTP are required' });
+
+    if (otpStore[email] === otp) {
+        delete otpStore[email];
+        return res.status(200).json({ success: true, message: 'Email verified successfully' });
+    } else {
+        return res.status(401).json({ success: false, message: 'Invalid OTP' });
+    }
+});
+
+// ✅ Test
+app.get('/', (req, res) => {
+    res.send('OTP service (Twilio + Resend) is running!');
+});
+
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
