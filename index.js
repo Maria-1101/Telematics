@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const twilio = require('twilio');
-const { Resend } = require('resend');
+const SibApiV3Sdk = require('sib-api-v3-sdk'); // Brevo SDK
 
 const app = express();
 app.use(cors());
@@ -14,9 +14,15 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 const serviceSid = process.env.TWILIO_SERVICE_SID;
 const client = twilio(accountSid, authToken);
 
-// Resend setup
-const resend = new Resend(process.env.RESEND_API_KEY);
-const otpStore = {}; // In-memory storage for email OTPs
+// Brevo setup
+const brevoApiKey = process.env.BREVO_API_KEY;
+const senderEmail = process.env.SENDER_EMAIL; // Must be verified in Brevo
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+defaultClient.authentications['api-key'].apiKey = brevoApiKey;
+const brevoEmailApi = new SibApiV3Sdk.TransactionalEmailsApi();
+
+// In-memory store for email OTPs
+const otpStore = {};
 
 // ✅ SMS OTP - Send
 app.post('/send-otp', (req, res) => {
@@ -57,7 +63,7 @@ app.post('/verify-otp', (req, res) => {
         });
 });
 
-// ✅ Email OTP - Send
+// ✅ Email OTP - Send (using Brevo)
 app.post('/send-email-otp', async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
@@ -65,14 +71,15 @@ app.post('/send-email-otp', async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore[email] = otp;
 
-    try {
-        await resend.emails.send({
-            from: 'Your Name <your-verified-email@example.com>', // Must be verified in Resend
-            to: email,
-            subject: 'Your OTP Verification Code',
-            text: `Your OTP is: ${otp}`,
-        });
+    const emailData = {
+        to: [{ email }],
+        sender: { name: 'Your App', email: senderEmail },
+        subject: 'Your OTP Verification Code',
+        textContent: `Your OTP is: ${otp}`,
+    };
 
+    try {
+        await brevoEmailApi.sendTransacEmail(emailData);
         console.log(`Email OTP sent to ${email}: ${otp}`);
         res.status(200).json({ success: true, message: 'OTP sent to email' });
     } catch (error) {
@@ -96,7 +103,7 @@ app.post('/verify-email-otp', (req, res) => {
 
 // ✅ Test
 app.get('/', (req, res) => {
-    res.send('OTP service (Twilio + Resend) is running!');
+    res.send('OTP service (Twilio + Brevo) is running!');
 });
 
 // Start server

@@ -1,21 +1,30 @@
 package com.example.ntele
 
-import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.widget.ArrayAdapter
-import android.widget.EditText
+import android.widget.ImageView
+import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
+import com.qamar.curvedbottomnaviagtion.findFont
 import java.util.*
 
 class UserDetails : AppCompatActivity() {
     private lateinit var dobInput: TextInputEditText
+    private lateinit var mobileNumText: TextInputEditText
+    private lateinit var emailEditText: TextInputEditText
+    private lateinit var mobileNumVerifiedIcon: ImageView
+    private lateinit var nameEdittext: TextInputEditText
+    private lateinit var stateEdittext: TextInputEditText
+    private lateinit var cityEdittext: TextInputEditText
+    private lateinit var postalCodeEdittext: TextInputEditText
+    private lateinit var genderSpinner: MaterialAutoCompleteTextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,11 +32,38 @@ class UserDetails : AppCompatActivity() {
 
         dobInput = findViewById(R.id.dob_input)
         val emailVerify_text = findViewById<TextView>(R.id.verify_text)
+        mobileNumText = findViewById(R.id.editTextPhone)
+        emailEditText =  findViewById(R.id.email_input)
+        mobileNumVerifiedIcon =  findViewById(R.id.verified_MobileNumber_icon)
+        nameEdittext =  findViewById(R.id.name_input)
+        stateEdittext = findViewById(R.id.state_input)
+        cityEdittext =  findViewById(R.id.city_input)
+        postalCodeEdittext = findViewById(R.id.postalCode_input)
+        genderSpinner = findViewById(R.id.gender_input)
 
-        emailVerify_text.setOnClickListener{
-            val intent =Intent(this,EmailOTPVerification::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
+        val verifiedPhoneNumber = intent.getStringExtra("verifiedPhoneNumber")
+
+        if (!verifiedPhoneNumber.isNullOrEmpty()) {
+            mobileNumText.setText(verifiedPhoneNumber)
+            mobileNumText.isEnabled = false
+            mobileNumText.isFocusable = false
+            mobileNumVerifiedIcon.visibility = View.VISIBLE
+        } else {
+            mobileNumVerifiedIcon.visibility = View.GONE
+        }
+
+        // ✅ Email Verify Click with Validation
+        emailVerify_text.setOnClickListener {
+            val email = emailEditText.text.toString().trim()
+            if (isValidEmail(email)) {
+                val intent = Intent(this, EmailOTPVerification::class.java).apply {
+                    putExtra("email", email)
+                }
+                startActivity(intent)
+            } else {
+                emailEditText.error = "Please enter a valid email address"
+                emailEditText.requestFocus()
+            }
         }
 
         dobInput.addTextChangedListener(object : TextWatcher {
@@ -95,5 +131,10 @@ class UserDetails : AppCompatActivity() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, genderOptions)
         genderInput.setAdapter(adapter)
 
+    }
+
+    // ✅ Email validation function
+    private fun isValidEmail(email: String): Boolean {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 }

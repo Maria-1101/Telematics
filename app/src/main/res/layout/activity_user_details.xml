@@ -181,7 +181,7 @@
                             android:textSize="16sp" />
                     </com.google.android.material.textfield.TextInputLayout>
                     <ImageView
-                        android:id="@+id/verified_MobileNumber"
+                        android:id="@+id/verified_MobileNumber_icon"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/baseline_check_circle_outline_24"

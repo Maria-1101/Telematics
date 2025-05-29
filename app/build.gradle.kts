@@ -58,5 +58,7 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.serviceLocation)
     implementation(libs.androidVolley)
+    implementation(libs.okhttpService)
+    implementation(libs.firebaseService)
 }
 
