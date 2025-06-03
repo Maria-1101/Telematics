@@ -200,7 +200,7 @@
                         android:gravity="start" />
 
                     <TextView
-                        android:id="@+id/current_progress_textview"
+                        android:id="@+id/DTE_progress_textview"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -318,7 +318,7 @@
                                 android:src="@drawable/parked_time" />
 
                             <TextView
-                                android:id="@+id/parked_tme_textview"
+                                android:id="@+id/parked_time_textview"
                                 android:layout_width="wrap_content"
                                 android:layout_height="13dp"
                                 android:layout_marginStart="6dp"
@@ -398,7 +398,7 @@
                             android:orientation="vertical">
 
                             <TextView
-                                android:id="@+id/parameter_display_textview"
+                                android:id="@+id/mileage_display_textview"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
@@ -411,7 +411,7 @@
                                 android:translationY="-0.62sp" />
 
                             <TextView
-                                android:id="@+id/parameter_title"
+                                android:id="@+id/mileage_title"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp"
@@ -456,7 +456,7 @@
                             android:orientation="vertical">
 
                             <TextView
-                                android:id="@+id/speed_display_textiew"
+                                android:id="@+id/speed_display_textview"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
@@ -515,7 +515,7 @@
                             android:orientation="vertical">
 
                             <TextView
-                                android:id="@+id/CO2_display_textview"
+                                android:id="@+id/co2_display_textview"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="10dp"
@@ -671,7 +671,8 @@
                             android:switchPadding="0dp"
                             android:thumb="@drawable/switch_thumb"
                             android:track="@drawable/switch_track"
-                            app:useMaterialThemeColors="false" />
+                            app:useMaterialThemeColors="false"
+                            tools:ignore="SpeakableTextPresentCheck" />
 
 
                     </LinearLayout>
@@ -897,7 +898,7 @@
                     android:layout_height="40dp"
                     android:layout_marginStart="8dp"
                     android:background="@null"
-                    android:contentDescription="Action Button"
+                    android:contentDescription="@string/action_button"
                     android:scaleType="fitCenter"
                     android:src="@drawable/default_sos"
                     tools:ignore="TouchTargetSizeCheck" />
@@ -911,7 +912,7 @@
                     android:visibility="gone"
                     android:contentDescription="Action Button"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/default_sos"
+                    android:src="@drawable/selected_sos"
                     tools:ignore="TouchTargetSizeCheck" />
 
             </LinearLayout>

@@ -3,7 +3,7 @@
     <string name="supra_telet">Supra Teletrack</string>
     <string name="mobile_number_verification">Verify your number</string>
     <string name="enter_the_otp">Enter the OTP sent to </string>
-    <string name="help">Having trouble? Request new OTP in</string>
+    <string name="help">Having trouble?</string>
     <string name="resend_otp">Resend OTP</string>
     <string name="create_account">Create Account</string>
     <string name="description">Your all-in-one app, bringing cluster data to your fingertips.</string>
@@ -60,6 +60,13 @@
     <string name="contacts_hint">3 contacts added</string>
     <string name="soc_hint">50%</string>
     <string name="suprateletrack">Supra Teletrack</string>
+    <string name="mobile_number_login">Mobile Number Login</string>
+    <string name="email_login">Email Login</string>
+    <string name="or_continue_with">or continue with</string>
+    <string name="send_otp">Send OTP</string>
+    <string name="email">Email</string>
+    <string name="mobile_number">Mobile Number</string>
+    <string name="action_button">Action Button</string>
 
 
 </resources>

@@ -21,7 +21,6 @@ okhttpVersion = "4.11.0"
 firebase = "20.3.0"
 
 
-
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -38,7 +37,7 @@ curvedbottomNavigation = { group = "com.github.qamarelsafadi" ,  name = "CurvedB
 glide = {group = "com.github.bumptech.glide" , name = "glide" , version.ref = "glide_ref"}
 serviceLocation = { group = "com.google.android.gms" , name = "play-services-location" ,version.ref = "location"}
 androidVolley = { group = "com.android.volley" , name = "volley" , version.ref = "volley"}
-okhttpService = { group = "com.squareup.okhttp3" , name= "okhttp" , version.ref = "okhttpVersion"}
+okhttpService = { group = "com.squareup.okhttp3" ,  name = "okhttp" , version.ref = "okhttpVersion"}
 firebaseService = { group = "com.google.firebase" , name = "firebase-database" , version.ref = "firebase"}
 
 [plugins]

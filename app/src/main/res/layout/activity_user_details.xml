@@ -244,7 +244,7 @@
                         android:textStyle="bold"
                         tools:ignore="TouchTargetSizeCheck" />
                     <ImageView
-                        android:id="@+id/verified_emailID"
+                        android:id="@+id/verified_emailID_icon"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/baseline_check_circle_outline_24"
@@ -428,7 +428,7 @@
 
 
                 <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/verify_button"
+                    android:id="@+id/get_started"
                     android:layout_width="349dp"
                     android:layout_height="40dp"
                     android:layout_gravity="center"
@@ -437,6 +437,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:text="Get Started"
+                    android:foreground="?attr/selectableItemBackground"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -444,7 +445,7 @@
                     tools:ignore="TouchTargetSizeCheck" />
 
                 <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/verify_button_clickable"
+                    android:id="@+id/get_started_clickable"
                     android:layout_width="349dp"
                     android:layout_height="49dp"
                     android:layout_gravity="center"
@@ -452,6 +453,7 @@
                     android:background="@drawable/button_background_white"
                     android:clickable="true"
                     android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
                     android:text="Get Started"
                     android:textStyle="bold"
                     android:visibility="gone" />

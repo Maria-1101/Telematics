@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -18,6 +19,7 @@ import org.json.JSONObject
 import java.io.IOException
 
 class EmailOTPVerification : AppCompatActivity() {
+
     private lateinit var emailIdToVerify: TextView
     private lateinit var otpFields: List<EditText>
     private lateinit var timerText: TextView
@@ -28,6 +30,16 @@ class EmailOTPVerification : AppCompatActivity() {
     private var countDownTimer: CountDownTimer? = null
     private val BASE_URL = "https://telematics-zdbu.onrender.com"
 
+    // Retain user input fields
+    private lateinit var fullName: String
+    private lateinit var phoneNumber: String
+    private lateinit var dob: String
+    private lateinit var state: String
+    private lateinit var city: String
+    private lateinit var postalCodeStr: String
+    private lateinit var gender: String
+    private lateinit var source: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -37,6 +49,7 @@ class EmailOTPVerification : AppCompatActivity() {
         timerText = findViewById(R.id.new_otp_request_timing)
         resendOTP = findViewById(R.id.resend_otp)
         verifyButton = findViewById(R.id.verify_button)
+
         otpFields = listOf(
             findViewById(R.id.otp_1),
             findViewById(R.id.otp_2),
@@ -46,7 +59,17 @@ class EmailOTPVerification : AppCompatActivity() {
             findViewById(R.id.otp_6)
         )
 
+        // Get data from intent
         userEmail = intent.getStringExtra("email") ?: ""
+        fullName = intent.getStringExtra("name") ?: ""
+        dob = intent.getStringExtra("dob") ?: ""
+        state = intent.getStringExtra("state") ?: ""
+        city = intent.getStringExtra("city") ?: ""
+        postalCodeStr = intent.getStringExtra("postalCode") ?: ""
+        gender = intent.getStringExtra("gender") ?: ""
+        phoneNumber = intent.getStringExtra("verifiedPhoneNumber") ?: ""
+        source = intent.getStringExtra("source") ?: "registration"
+
         emailIdToVerify.text = userEmail
 
         setupOtpInputs()
@@ -76,7 +99,6 @@ class EmailOTPVerification : AppCompatActivity() {
                         otpFields[i + 1].requestFocus()
                     }
                 }
-
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             })
@@ -89,7 +111,7 @@ class EmailOTPVerification : AppCompatActivity() {
 
         countDownTimer = object : CountDownTimer(60000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                timerText.text = "Resend in ${millisUntilFinished / 1000}s"
+                timerText.text = "Resend OTP in ${millisUntilFinished / 1000}s"
             }
 
             override fun onFinish() {
@@ -152,9 +174,25 @@ class EmailOTPVerification : AppCompatActivity() {
                 runOnUiThread {
                     if (response.isSuccessful) {
                         Toast.makeText(this@EmailOTPVerification, "Email verified!", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this@EmailOTPVerification, UserDetails::class.java)
-                        intent.putExtra("verifiedEmail", email)
-                        startActivity(intent)
+
+                        if(source == "registration") {
+                            val intent = Intent(this@EmailOTPVerification, UserDetails::class.java)
+                            intent.putExtra("verifiedEmail", email)
+                            intent.putExtra("name", fullName)
+                            intent.putExtra("dob", dob)
+                            intent.putExtra("state", state)
+                            intent.putExtra("city", city)
+                            intent.putExtra("postalCode", postalCodeStr)
+                            intent.putExtra("gender", gender)
+                            intent.putExtra("verifiedPhoneNumber", phoneNumber)
+                            intent.putExtra("isEmailVerified", true)
+                            startActivity(intent)
+                        }else if(source == "login") {
+                            val intent = Intent (this@EmailOTPVerification, BottomNavigationDrawer::class.java)
+                            intent.putExtra("name", fullName)
+                            Log.d(" name Email","" + fullName)
+                            startActivity(intent)
+                        }
                         finish()
                     } else {
                         Toast.makeText(this@EmailOTPVerification, "Invalid OTP", Toast.LENGTH_SHORT).show()

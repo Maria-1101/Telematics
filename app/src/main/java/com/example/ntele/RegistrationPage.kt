@@ -12,6 +12,10 @@ import com.android.volley.Response
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.hbb20.CountryCodePicker
 import org.json.JSONObject
 
@@ -44,8 +48,42 @@ class RegistrationPage : AppCompatActivity() {
             }
 
             val fullPhoneNumber = "+${ccp.selectedCountryCode}$phoneNumber"
-            sendOtpToBackend(fullPhoneNumber)
+            checkIfPhoneNumberExists(fullPhoneNumber)
         }
+    }
+
+    private fun checkIfPhoneNumberExists(phoneNumber: String) {
+        val databaseRef = FirebaseDatabase.getInstance("https://telematics-a0e1f-default-rtdb.asia-southeast1.firebasedatabase.app/")
+            .getReference("RegistrationDetails")
+
+        databaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var isRegistered = false
+
+                for (child in snapshot.children) {
+                    val registeredNumber = child.child("phone").getValue(String::class.java)
+                    if (registeredNumber == phoneNumber) {
+                        isRegistered = true
+                        break
+                    }
+                }
+
+                if (isRegistered) {
+                    Toast.makeText(
+                        this@RegistrationPage,
+                        "Phone number already registered. Please login.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    sendOtpToBackend(phoneNumber)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@RegistrationPage, "Database error: ${error.message}", Toast.LENGTH_LONG).show()
+                Log.e("Firebase", "Database error: ${error.message}")
+            }
+        })
     }
 
     private fun sendOtpToBackend(phoneNumber: String) {
@@ -62,7 +100,8 @@ class RegistrationPage : AppCompatActivity() {
             Response.Listener { response ->
                 Toast.makeText(this, "OTP Sent!", Toast.LENGTH_SHORT).show()
                 val intent = Intent(this, OTPVerificationPage::class.java)
-                intent.putExtra("fullPhoneNumber", phoneNumber)
+                intent.putExtra("phoneNumber", phoneNumber)
+                intent.putExtra("source","registration")
                 startActivity(intent)
             },
             Response.ErrorListener { error ->

@@ -83,80 +83,78 @@
                 android:id="@+id/mobile_phone_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/rounded_edittext_bg"
                 android:orientation="vertical"
                 android:paddingTop="30dp"
-                android:paddingBottom="20dp"
-                android:background="@drawable/rounded_edittext_bg">
+                android:paddingBottom="20dp">
 
                 <LinearLayout
                     android:layout_width="300dp"
                     android:layout_height="45dp"
                     android:layout_gravity="center"
-                    android:orientation="horizontal"
                     android:background="@drawable/login_mobile_number_stroke"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
                     android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:gravity="center_vertical">
+                    android:paddingEnd="12dp">
 
-                <com.hbb20.CountryCodePicker
-                    android:id="@+id/countryCodePicker"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    app:ccp_showFlag="false"
-                    app:ccp_autoDetectCountry="true"
-                    app:ccp_defaultNameCode="IN"
-                    app:ccp_showNameCode="false"
-                    app:ccp_contentColor="@color/white"
-                    app:ccp_textSize="16sp" />
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="30dp"
-                    android:layout_marginHorizontal="8dp"
-                    android:background="@color/hint" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/phone_input_layout"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:hint="Mobile Number"
-                    android:textColorHint="@color/hint"
-                    app:boxBackgroundMode="none"
-                    app:hintAnimationEnabled="true"
-                    app:hintTextAppearance="@style/HintTextStyle">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/mobile_num_edittext"
-                        android:layout_width="match_parent"
+                    <com.hbb20.CountryCodePicker
+                        android:id="@+id/countryCodePicker"
+                        android:layout_width="wrap_content"
                         android:layout_height="match_parent"
+                        app:ccp_autoDetectCountry="true"
+                        app:ccp_contentColor="@color/white"
+                        app:ccp_defaultNameCode="IN"
+                        app:ccp_showFlag="false"
+                        app:ccp_showNameCode="false"
+                        app:ccp_textSize="16sp" />
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="30dp"
+                        android:layout_marginHorizontal="8dp"
+                        android:background="@color/hint" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/phone_input_layout"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
                         android:background="@android:color/transparent"
-                        android:inputType="phone"
-                        android:paddingStart="12dp"
-                        android:paddingTop="0dp"
-                        android:paddingEnd="12dp"
-                        android:paddingBottom="0dp"
-                        android:textColor="@android:color/white"
-                        android:textSize="16sp"
-                        tools:ignore="TouchTargetSizeCheck" />
-                </com.google.android.material.textfield.TextInputLayout>
-            </LinearLayout>
+                        android:hint="Mobile Number"
+                        android:textColorHint="@color/hint"
+                        app:boxBackgroundMode="none"
+                        app:hintAnimationEnabled="true"
+                        app:hintTextAppearance="@style/HintTextStyle">
 
-
-        <Button
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/mobile_num_edittext"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@android:color/transparent"
+                            android:inputType="phone"
+                            android:paddingStart="12dp"
+                            android:paddingTop="0dp"
+                            android:paddingEnd="12dp"
+                            android:paddingBottom="0dp"
+                            android:textColor="@android:color/white"
+                            android:textSize="16sp"
+                            tools:ignore="TouchTargetSizeCheck" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/send_otp_btn"
-                    android:layout_width="wrap_content"
+                    android:layout_width="300dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="15dp"
                     android:text="Send OTP"
-                    android:textStyle="normal"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:background="@drawable/button_gradient"
                     android:textColor="@color/white"
                     android:textSize="14sp"
-                    android:background="@drawable/button_gradient"
-                    android:clickable="true"
-                    android:focusable="true" />
+                    android:textStyle="normal" />
+
             </LinearLayout>
         </FrameLayout>
 

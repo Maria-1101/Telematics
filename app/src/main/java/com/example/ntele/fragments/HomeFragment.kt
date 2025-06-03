@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +27,11 @@ import com.example.ntele.R
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class HomeFragment : Fragment() {
 
@@ -40,9 +46,19 @@ class HomeFragment : Fragment() {
     private lateinit var sosButtonSelected: ImageButton
     private lateinit var sosFrame: FrameLayout
     private lateinit var sosText: TextView
+    private lateinit var nameField: TextView
 
+    private lateinit var batteryLevel: TextView
+    private lateinit var dteProgress: TextView
+    private lateinit var parkedLocation: TextView
+    private lateinit var parkedTime: TextView
+    private lateinit var mileageInput: TextView
+    private lateinit var speedInput: TextView
+    private lateinit var co2Input: TextView
+    private lateinit var distanceInput: TextView
+
+    private lateinit var databaseRef: DatabaseReference
     private var mapImageView: ImageView? = null
-    var isSelected = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -60,30 +76,31 @@ class HomeFragment : Fragment() {
         sosButtonSelected = rootView.findViewById(R.id.sos_button_selected)
         sosFrame = rootView.findViewById(R.id.sos_frame)
         sosText =  rootView.findViewById(R.id.sos_text)
+        batteryLevel = rootView.findViewById(R.id.battery_level_detection_textview)
+        dteProgress = rootView.findViewById(R.id.DTE_progress_textview)
+        parkedLocation = rootView.findViewById(R.id.parked_place_textview)
+        parkedTime = rootView.findViewById(R.id.parked_time_textview)
+        mileageInput = rootView.findViewById(R.id.mileage_display_textview)
+        speedInput = rootView.findViewById(R.id.speed_display_textview)
+        co2Input = rootView.findViewById(R.id.co2_display_textview)
+        distanceInput = rootView.findViewById(R.id.distance_display_textiew)
+        nameField = rootView.findViewById(R.id.name_text)
 
+        databaseRef = FirebaseDatabase.getInstance("https://telematics-a0e1f-default-rtdb.asia-southeast1.firebasedatabase.app/")
+            .reference
+
+        val name = arguments?.getString("name")
+        nameField.text = name ?: "User"
+        Log.d("name","" + name)
+
+        name?.let { loadDataFromFirebase(it) }
+        
         sosButtonDefault.setOnClickListener {
-            sosFrame.setBackgroundResource(R.drawable.selected_sos_bg)
-            sosButtonDefault.visibility = View.GONE
-            sosButtonSelected.visibility = View.VISIBLE
-            val boldTypeface = ResourcesCompat.getFont(requireContext(), R.font.roboto_bold)
-            sosText.typeface = boldTypeface
+            updateSosState(1, name)
         }
 
         sosButtonSelected.setOnClickListener {
-            sosFrame.setBackgroundResource(R.drawable.sos_bg) // your original bg drawable
-            sosButtonDefault.visibility = View.VISIBLE
-            sosButtonSelected.visibility = View.GONE
-            val regularTypeface = ResourcesCompat.getFont(requireContext(), R.font.roboto_regular)
-            sosText.typeface = regularTypeface
-        }
-
-
-        seatToggleBtn.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                Toast.makeText(requireContext(), "Switch On", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(requireContext(), "Switch Off", Toast.LENGTH_SHORT).show()
-            }
+            updateSosState(0, name)
         }
 
         immobilizationToggleBtn.isEnabled = false
@@ -109,6 +126,160 @@ class HomeFragment : Fragment() {
 
         return rootView
     }
+
+    private fun updateSosState(state: Int, name: String?) {
+        if (name == null) return
+
+        databaseRef.child("HomeFragment").child(name).child("sos").setValue(state)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    if (state == 1) {
+                        // SOS activated UI changes
+                        sosFrame.setBackgroundResource(R.drawable.selected_sos_bg)
+                        sosButtonDefault.visibility = View.GONE
+                        sosButtonSelected.visibility = View.VISIBLE
+                        val boldTypeface = ResourcesCompat.getFont(requireContext(), R.font.roboto_bold)
+                        sosText.typeface = boldTypeface
+                        Toast.makeText(requireContext(), "SOS Activated", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // SOS deactivated UI changes
+                        sosFrame.setBackgroundResource(R.drawable.sos_bg)
+                        sosButtonDefault.visibility = View.VISIBLE
+                        sosButtonSelected.visibility = View.GONE
+                        val regularTypeface = ResourcesCompat.getFont(requireContext(), R.font.roboto_regular)
+                        sosText.typeface = regularTypeface
+                        Toast.makeText(requireContext(), "SOS Deactivated", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Failed to update SOS state", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+    }
+
+    private fun loadDataFromFirebase(userName: String) {
+        val userRef = databaseRef.child("HomeFragment").child(userName)
+
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    // Battery Level (e.g., "85 %")
+                    batteryLevel.text = snapshot.child("battery_level").getValue(Int::class.java)?.let {
+                        "$it %"
+                    } ?: "-"
+
+                    // DTE Progress (Distance to Empty) in km (e.g., "120 km")
+                    dteProgress.text = snapshot.child("dte_progress").getValue(Int::class.java)?.let {
+                        "DTE $it km"
+                    } ?: "-"
+
+                    // Mileage in km (e.g., "15 km")
+                    mileageInput.text = snapshot.child("mileage").getValue(Double::class.java)?.let {
+                        if (it % 1.0 == 0.0) {
+                            "${it.toInt()} km"
+                        } else {
+                            String.format("%.2f km", it)
+                        }
+                    } ?: "-"
+
+                    speedInput.text = snapshot.child("avg_speed").getValue(Double::class.java)?.let {
+                        if (it % 1.0 == 0.0) {
+                            "${it.toInt()} km/h"
+                        } else {
+                            String.format("%.2f km/h", it)
+                        }
+                    } ?: "-"
+
+                    distanceInput.text = snapshot.child("total_distance").getValue(Double::class.java)?.let {
+                        if (it % 1.0 == 0.0) {
+                            "${it.toInt()} km"
+                        } else {
+                            String.format("%.2f km", it)
+                        }
+                    } ?: "-"
+
+                    co2Input.text = snapshot.child("co2_saved").getValue(Double::class.java)?.let {
+                        if (it % 1.0 == 0.0) {
+                            "${it.toInt()} kg"
+                        } else {
+                            String.format("%.2f kg", it)
+                        }
+                    } ?: "-"
+
+                    // Parked Place (string)
+                    parkedLocation.text = snapshot.child("parked_place").getValue(String::class.java) ?: "-"
+
+                    // Parked Time formatted as "Xh Ym"
+                    val parkedTimeRaw = snapshot.child("parked_time").getValue(Double::class.java)
+                    parkedTime.text = parkedTimeRaw?.let { formatParkedTime(it) } ?: "-"
+
+                    // Toggles: seat_lock, vehicle_lock, handle_lock (stored as Int 1 or 0)
+                    seatToggleBtn.isChecked = snapshot.child("seat_lock").getValue(Int::class.java) == 1
+                    vehicleToggleBtn.isChecked = snapshot.child("vehicle_lock").getValue(Int::class.java) == 1
+                    handleToggleBtn.isChecked = snapshot.child("handle_lock").getValue(Int::class.java) == 1
+
+                    val sosState = snapshot.child("sos").getValue(Int::class.java) ?: 0
+                    if (sosState == 1) {
+                        sosFrame.setBackgroundResource(R.drawable.selected_sos_bg)
+                        sosButtonDefault.visibility = View.GONE
+                        sosButtonSelected.visibility = View.VISIBLE
+                        val boldTypeface = ResourcesCompat.getFont(requireContext(), R.font.roboto_bold)
+                        sosText.typeface = boldTypeface
+                    } else {
+                        sosFrame.setBackgroundResource(R.drawable.sos_bg)
+                        sosButtonDefault.visibility = View.VISIBLE
+                        sosButtonSelected.visibility = View.GONE
+                        val regularTypeface = ResourcesCompat.getFont(requireContext(), R.font.roboto_regular)
+                        sosText.typeface = regularTypeface
+                    }
+
+                } else {
+                    // No data found
+                    Toast.makeText(requireContext(), "No data found for $userName", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            private fun formatParkedTime(timeInMinutes: Double): String {
+                val totalMinutes = timeInMinutes.toInt()
+                val hours = totalMinutes / 60
+                val minutes = totalMinutes % 60
+                return "${hours}h ${minutes}m"
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(requireContext(), "Failed to load data: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        // Update Firebase on toggle changes
+        seatToggleBtn.setOnCheckedChangeListener { _, isChecked ->
+            userRef.child("seat_lock").setValue(if (isChecked) 1 else 0)
+            Toast.makeText(requireContext(), if (isChecked) "Seat Lock Enabled" else "Seat Lock Disabled", Toast.LENGTH_SHORT).show()
+        }
+
+        vehicleToggleBtn.setOnCheckedChangeListener { _, isChecked ->
+            userRef.child("vehicle_lock").setValue(if (isChecked) 1 else 0)
+            Toast.makeText(requireContext(), if (isChecked) "Vehicle Lock Enabled" else "Vehicle Lock Disabled", Toast.LENGTH_SHORT).show()
+        }
+
+        handleToggleBtn.setOnCheckedChangeListener { _, isChecked ->
+            userRef.child("handle_lock").setValue(if (isChecked) 1 else 0)
+            Toast.makeText(requireContext(), if (isChecked) "Handle Lock Enabled" else "Handle Lock Disabled", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Helper function to convert parked time in minutes (String) to "Xh Ym" format
+    private fun formatParkedTime(timeString: String): String {
+        return try {
+            val totalMinutes = timeString.toInt()
+            val hours = totalMinutes / 60
+            val minutes = totalMinutes % 60
+            "${hours}h ${minutes}m"
+        } catch (e: NumberFormatException) {
+            timeString // fallback if not a valid number
+        }
+    }
+
 
     override fun onResume() {
         super.onResume()

@@ -180,6 +180,7 @@
             android:layout_height="49dp"
             android:layout_gravity="center"
             android:layout_marginTop="50dp"
+            android:foreground="?attr/selectableItemBackground"
             android:background="@drawable/button_background_halfwhite"
             android:clickable="true"
             android:focusable="true"

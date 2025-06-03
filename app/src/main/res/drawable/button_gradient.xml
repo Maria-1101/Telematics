@@ -4,12 +4,12 @@
 
     <gradient
         android:type="linear"
-        android:angle="0"
+        android:angle="45"
         android:startColor="#132124"
         android:centerColor="#5B8792"
-        android:centerX="1"
+        android:centerX="2"
         android:endColor="#FFFFFF" />
 
-    <corners android:radius="10dp" />
+    <corners android:radius="30dp" />
 
 </shape>
