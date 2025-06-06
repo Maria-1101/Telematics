@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "905310517207",
+    "firebase_url": "https://telematics-a0e1f-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "telematics-a0e1f",
+    "storage_bucket": "telematics-a0e1f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:905310517207:android:1650eac24d2e96070c7d92",
+        "android_client_info": {
+          "package_name": "com.example.ntele"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-lzhQB_GNyhU5Ic65jNbG8QSq_SyEcHE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
